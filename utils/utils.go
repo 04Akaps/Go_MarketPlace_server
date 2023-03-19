@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func GetHttpLogFile() (*log.Logger, *os.File) {
+func GetHttpLogFile() *log.Logger {
 	t := time.Now()
 	startTime := t.Format("2006-01-02 15:04:05")
 	logFile, err := os.Create("httpServerLog/ErrorFile " + startTime + ".log")
@@ -15,5 +15,5 @@ func GetHttpLogFile() (*log.Logger, *os.File) {
 	}
 	logger := log.New(logFile, "", log.LstdFlags)
 
-	return logger, logFile
+	return logger
 }
