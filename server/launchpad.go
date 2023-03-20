@@ -34,12 +34,6 @@ func (controller *LaunchpadController) MakeLaunchpad(w http.ResponseWriter, r *h
 	fmt.Println("Make Launchpad")
 }
 
-type Launchpad struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-	// 기타 필드
-}
-
 func (controller *LaunchpadController) GetLaunchpadData(w http.ResponseWriter, r *http.Request) {
 	hash := r.URL.Query().Get("id")
 	// hash값을 통해서 데이터를 가져 올 예정
