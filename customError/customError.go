@@ -3,6 +3,7 @@ package customError
 import (
 	"encoding/json"
 	"log"
+	"net/http"
 )
 
 type HttpServerLog struct {
@@ -23,24 +24,20 @@ func (httpServerLog *HttpServerLog) HttpErrorChannelInit() {
 
 }
 
-type CustomError struct {
-	Message   string `json:"message"`
-	ErrorCode int    `json:"error_code"`
+type Launchpad struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+	// 기타 필드
 }
 
-func NewHandlerError(message string, errorCode int) []byte {
-	// 일단 두기는 했는데.. 나중에 사용하면 사용하고 아니면 삭제 예정
+type CustomError struct {
+	Message string `json:"message"`
+}
+
+func NewHandlerError(w http.ResponseWriter, message string, errorCode int) {
+	w.WriteHeader(errorCode)
 	customError := CustomError{
-		Message:   message,
-		ErrorCode: errorCode,
+		Message: message,
 	}
-
-	byteData, err := json.Marshal(customError)
-
-	if err != nil {
-		log.Println("NewHandlerError Marshaling Error")
-		return []byte("파싱 에러 서버 확인 필요")
-	}
-
-	return byteData
+	json.NewEncoder(w).Encode(customError)
 }
