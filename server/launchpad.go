@@ -3,6 +3,7 @@ package server
 import (
 	"errors"
 	"fmt"
+	"goServer/customError"
 	"net/http"
 )
 
@@ -35,16 +36,13 @@ func (controller *LaunchpadController) MakeLaunchpad(w http.ResponseWriter, r *h
 
 func (controller *LaunchpadController) GetLaunchpadData(w http.ResponseWriter, r *http.Request) {
 	hash := r.URL.Query().Get("id")
-	fmt.Println(hash)
 	// hash값을 통해서 데이터를 가져 올 예정
-
 	if hash == "" {
 		controller.ErrorChannel <- queryIdEmpty
 		http.Error(w, QUERY_ID_EMPTY_STRING, http.StatusForbidden)
 		return
 	}
-	//
-	//w.WriteHeader(http.StatusTemporaryRedirect)
-	http.Error(w, "잘못된 요청", http.StatusInternalServerError)
 
+	w.WriteHeader(http.StatusOK)
+	w.Write(customError.NewHandlerError("abc", 200)) // 후에 데이터를 내려 줘야함
 }

@@ -2,7 +2,6 @@ package customError
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 )
 
@@ -25,27 +24,23 @@ func (httpServerLog *HttpServerLog) HttpErrorChannelInit() {
 }
 
 type CustomError struct {
-	message   string
-	errorCode int
+	Message   string `json:"message"`
+	ErrorCode int    `json:"error_code"`
 }
 
-func NewHandlerError(message string, errorCode int) string {
+func NewHandlerError(message string, errorCode int) []byte {
 	// 일단 두기는 했는데.. 나중에 사용하면 사용하고 아니면 삭제 예정
-	customError := &CustomError{
-		message:   message,
-		errorCode: errorCode,
+	customError := CustomError{
+		Message:   message,
+		ErrorCode: errorCode,
 	}
 
-	fmt.Println(customError)
 	byteData, err := json.Marshal(customError)
 
-	fmt.Println(message, errorCode)
 	if err != nil {
 		log.Println("NewHandlerError Marshaling Error")
-		return "Error Chcek Server"
+		return []byte("파싱 에러 서버 확인 필요")
 	}
 
-	fmt.Println("====", string(byteData))
-
-	return string(byteData)
+	return byteData
 }
