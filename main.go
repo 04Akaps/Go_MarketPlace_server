@@ -16,7 +16,7 @@ func init() {
 	httpServerErrLog = make(chan error)
 	envData = initData.InitEnv(".")
 
-	initData.HttpErrorChannelInit(httpServerErrLog, utils.GetHttpLogFile())
+	initData.HttpErrorChannelInit(httpServerErrLog, utils.GetHttpLogFile("httpErrorLog/"))
 }
 
 func main() {
