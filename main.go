@@ -1,6 +1,7 @@
 package main
 
 import (
+	"goServer/customError"
 	initData "goServer/init"
 	"goServer/utils"
 	"log"
@@ -9,14 +10,18 @@ import (
 )
 
 var envData initData.EnvData
-var httpServerErrLog chan error
+var httpServerErrLog *customError.HttpServerLog
 
 func init() {
 	log.SetFlags(log.Ldate | log.Ltime) // 시간을 로그로 찍음
-	httpServerErrLog = make(chan error)
 	envData = initData.InitEnv(".")
 
-	initData.HttpErrorChannelInit(httpServerErrLog, utils.GetHttpLogFile("httpErrorLog/"))
+	httpServerErrLog = &customError.HttpServerLog{
+		HttpServerErrLog: make(chan error),
+		Logger:           utils.GetHttpLogFile("httpErrorLog/"),
+	}
+	httpServerErrLog.HttpErrorChannelInit()
+
 }
 
 func main() {
@@ -24,7 +29,7 @@ func main() {
 	err := initData.HttpServerInit(envData.HttpServerPort)
 
 	if err != nil {
-		httpServerErrLog <- err
+		httpServerErrLog.HttpServerErrLog <- err
 	}
 
 	// 메인 루틴이 죽으면 모든 루틴이 죽어버리니깐 프로세스에 대한 시그널로 메인 루틴을 안죽게 설정

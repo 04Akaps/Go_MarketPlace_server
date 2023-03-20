@@ -11,7 +11,6 @@ import (
 
 func HttpServerInit(port string) error {
 	log.Println(" ------ Server Start ------ ")
-
 	return http.ListenAndServe(port, registerHttpRouter())
 }
 
@@ -19,11 +18,11 @@ func registerHttpRouter() http.Handler {
 	// 라우팅 관련해서는 Mux쓰는 것이 훨씬 깔끔하고 좋다고 생각하기 떄문에 Mux로 관리
 	router := mux.NewRouter()
 
+	logMux := utils.LoggingMiddleware(router) // 들어오는 요청에 대해서 로그 설정
+	c := cors.AllowAll()                      // 일단 개발 편의상을 위해 전체 수용
+
 	registerTestRouter(router)
 	registerLaunchpadRouter(router)
-
-	logMux := utils.LoggingMiddleware(router)
-	c := cors.AllowAll() // 일단 개발 편의상을 위해 전체 수용
 
 	corsRouter := c.Handler(logMux)
 	return corsRouter
@@ -39,20 +38,8 @@ func registerLaunchpadRouter(router *mux.Router) {
 	// MarketPlace에서 모든 블록을 계속 패칭하는 것은 개인 개발상으로 어렵고, 리소스 낭비가 너무 하다고정생각이 들기 떄문에
 	// Launchpad에서 만들어지는 NFT를 거래하는 부분만 다룰 예정
 	launchpadRouter := router.PathPrefix("/launchpad").Subrouter()
+
 	launchpadRouter.HandleFunc("", server.GetLaunchpadData).Methods("GET")
 	launchpadRouter.HandleFunc("/makeLaunchpad", server.MakeLaunchpad).Methods("POST")
-}
-
-func HttpErrorChannelInit(channel chan error, logger *log.Logger) {
-
-	go func() {
-		for {
-			select {
-			case httpErr := <-channel:
-				log.Println("Error : ", httpErr)
-				logger.Println(httpErr)
-			}
-		}
-	}()
 
 }
