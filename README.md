@@ -14,7 +14,6 @@ Jenkins로 배포하고, 이번에는 Docker가 아니라 EC2의 로드 밸런�
 - 사양한 가능하다면 프리티어로;;
 
 
-
 # 사용하는 패키지
 Viper
 Gomniauth
@@ -22,18 +21,16 @@ Paseto
 ...++
 
 
-# 버전 관리
-glide
-
-새로운 패키지 추가 하는 법
-1. glide get <패키지>
-2. version track은 Patch로 사용하여 최소화
-3. glide install
-
-패키지 업데이트 할 경우 사용하기
-1. glide up
-
 # env 관리
 
 내부에 app.env로 설정하여 다음과 같은 설정을 실행
+
+# 프로젝트 개요
+MarketPlace를 하나 만들 예정
+모든 Network에 대해서 블록을 계속 풀링하정건 불가능하니.. 해당 사이트에서 Launchpad를 하나 두어서
+거기에서 발생하는 NFT들에 대해서 데이터를 추적하여 처리 할 예정
+
+Launchpad는 ERC721A로 작성하고, Network는 Polygon 정도로 생각 중
+
+추가적으로 Chatting기능도 넣을 예
 
