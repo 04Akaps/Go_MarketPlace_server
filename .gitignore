@@ -1,2 +1,2 @@
 app.env
-/httpServerLog/*.log
+/serverLog/httpErrorLog/*.log
