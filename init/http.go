@@ -37,7 +37,7 @@ func registerTestRouter(router *mux.Router) {
 func registerLaunchpadRouter(router *mux.Router, channel chan error) {
 	// MarketPlace에서 모든 블록을 계속 패칭하는 것은 개인 개발상으로 어렵고, 리소스 낭비가 너무 하다고정생각이 들기 떄문에
 	// Launchpad에서 만들어지는 NFT를 거래하는 부분만 다룰 예정
-	launchpadRouter := router.PathPrefix("/launchpad").Subrouter()
+	launchpadRouter := router.PathPrefix("/launchpad.sql").Subrouter()
 
 	controller := server.NewLaunchpadController(channel)
 
