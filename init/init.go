@@ -7,6 +7,9 @@ import (
 
 type EnvData struct {
 	HttpServerPort string `mapstructure:"http_server_port"`
+	DbUserName     string `mapstructure:"db_username"`
+	DbPassword     string `mapstructure:"de_password"`
+	DbEndPoint     string `mapstructure:"db_endpoint"`
 }
 
 func InitEnv(path string) EnvData {

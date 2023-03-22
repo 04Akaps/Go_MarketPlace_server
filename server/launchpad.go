@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"goServer/customError"
+	sqlc "goServer/mysql/sqlc"
 	"net/http"
 )
 
@@ -19,6 +20,7 @@ var (
 
 type LaunchpadController struct {
 	ErrorChannel chan error
+	DBClient     *sqlc.Queries
 }
 
 type LaunchpadInterface interface {
@@ -27,9 +29,10 @@ type LaunchpadInterface interface {
 	GetLaunchpadsByChainId(http.ResponseWriter, *http.Request)
 }
 
-func NewLaunchpadController(channel chan error) LaunchpadInterface {
+func NewLaunchpadController(channel chan error, dbClient *sqlc.Queries) LaunchpadInterface {
 	return &LaunchpadController{
 		ErrorChannel: channel,
+		DBClient:     dbClient,
 	}
 }
 

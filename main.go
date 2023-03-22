@@ -24,10 +24,10 @@ func init() {
 
 func main() {
 
-	err := initData.HttpServerInit(envData.HttpServerPort, httpServerErrLog.HttpServerErrLog)
+	err := initData.HttpServerInit(envData, httpServerErrLog.HttpServerErrLog)
 
 	if err != nil {
-		httpServerErrLog.HttpServerErrLog <- err
+		log.Fatal(err) // 굳이 서버를 안끌 필요가 없으니 그냥 바로 Fatal
 	}
 
 	//// 메인 루틴이 죽으면 모든 루틴이 죽어버리니깐 프로세스에 대한 시그널로 메인 루틴을 안죽게 설정

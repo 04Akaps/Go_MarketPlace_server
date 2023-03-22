@@ -25,6 +25,10 @@ Paseto
 
 내부에 app.env로 설정하여 다음과 같은 설정을 실행
 
+db_uri = ""
+
+http_server_port = ""
+
 # 프로젝트 개요
 MarketPlace를 하나 만들 예정
 모든 Network에 대해서 블록을 계속 풀링하정건 불가능하니.. 해당 사이트에서 Launchpad를 하나 두어서
