@@ -22,6 +22,9 @@ func GetHttpLogFile(path string) *log.Logger {
 
 func LoggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Content-Type") != "" {
+			r.Header.Set("Content-Type", "application/json")
+		}
 		w.Header().Set("Content-Type", "application/json")
 		log.Printf("%s %s", r.Method, r.URL.Path)
 		next.ServeHTTP(w, r)
