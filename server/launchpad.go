@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/gorilla/mux"
 	"goServer/customError"
 	"net/http"
 )
@@ -22,7 +23,8 @@ type LaunchpadController struct {
 
 type LaunchpadInterface interface {
 	MakeLaunchpad(http.ResponseWriter, *http.Request)
-	GetLaunchpadData(http.ResponseWriter, *http.Request)
+	GetLaunchpadByHashValue(http.ResponseWriter, *http.Request)
+	GetLaunchpadsByChainId(http.ResponseWriter, *http.Request)
 }
 
 func NewLaunchpadController(channel chan error) LaunchpadInterface {
@@ -62,7 +64,7 @@ func (controller *LaunchpadController) MakeLaunchpad(w http.ResponseWriter, r *h
 	// SQL Insert 필요
 }
 
-func (controller *LaunchpadController) GetLaunchpadData(w http.ResponseWriter, r *http.Request) {
+func (controller *LaunchpadController) GetLaunchpadByHashValue(w http.ResponseWriter, r *http.Request) {
 	hash := r.URL.Query().Get("id")
 	// hash값을 통해서 데이터를 가져 올 예정
 	if hash == "" {
@@ -71,9 +73,20 @@ func (controller *LaunchpadController) GetLaunchpadData(w http.ResponseWriter, r
 		return
 	}
 
+	fmt.Println(hash)
+
 	// 데이터 문제 있을 떄
 	//customError.NewHandlerError(w, "ac", 200)
 
 	// 데이터 문제 없을 떄,
 	//utils.SuccesResponse(w, data)
+}
+
+func (controller *LaunchpadController) GetLaunchpadsByChainId(w http.ResponseWriter, r *http.Request) {
+
+	vars := mux.Vars(r)
+	chainId := vars["chainId"]
+	//r.URL.pa
+
+	fmt.Println(chainId)
 }

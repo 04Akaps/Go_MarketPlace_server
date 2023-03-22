@@ -41,7 +41,8 @@ func registerLaunchpadRouter(router *mux.Router, channel chan error) {
 
 	controller := server.NewLaunchpadController(channel)
 
-	launchpadRouter.HandleFunc("", controller.GetLaunchpadData).Methods("GET")
+	launchpadRouter.HandleFunc("", controller.GetLaunchpadByHashValue).Methods("GET")
+	launchpadRouter.HandleFunc("/chainId/{chainId}", controller.GetLaunchpadsByChainId).Methods("GET")
 	launchpadRouter.HandleFunc("", controller.MakeLaunchpad).Methods("POST")
 
 }
