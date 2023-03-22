@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -21,6 +22,7 @@ var (
 type LaunchpadController struct {
 	ErrorChannel chan error
 	DBClient     *sqlc.Queries
+	ctx          context.Context
 }
 
 type LaunchpadInterface interface {
@@ -30,9 +32,11 @@ type LaunchpadInterface interface {
 }
 
 func NewLaunchpadController(channel chan error, dbClient *sqlc.Queries) LaunchpadInterface {
+	context := context.Background()
 	return &LaunchpadController{
 		ErrorChannel: channel,
 		DBClient:     dbClient,
+		ctx:          context,
 	}
 }
 
