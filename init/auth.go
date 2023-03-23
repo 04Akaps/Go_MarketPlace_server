@@ -39,6 +39,7 @@ func initOAuth(envData EnvData) {
 		}
 	}
 
+	os.Setenv("BASE_URL", baseUri)
 	baseUri = strings.Join([]string{baseUri, "/auth"}, "")
 
 	//192.168.219.101/auth -> 이런 형태가 된다.

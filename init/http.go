@@ -52,6 +52,10 @@ func registerLaunchpadRouter(router *mux.Router, channel chan error, dbClient *s
 }
 
 func registerAuthRouter(router *mux.Router, channel chan error) {
-	//authRouter := router.PathPrefix("/auth").Subrouter()
+	authRouter := router.PathPrefix("/auth").Subrouter()
 
+	authController := server.NewAuthController()
+
+	authRouter.HandleFunc("/{action}/{provider}", authController.Auth)
+	authRouter.HandleFunc("/logout", authController.Logout)
 }
