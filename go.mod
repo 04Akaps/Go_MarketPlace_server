@@ -13,6 +13,7 @@ require (
 require (
 	github.com/StackExchange/wmi v0.0.0-20180116203802-5d049714c4a6 // indirect
 	github.com/btcsuite/btcd/btcec/v2 v2.3.2 // indirect
+	github.com/clbanning/x2j v0.0.0-20191024224557-825249438eec // indirect
 	github.com/deckarep/golang-set/v2 v2.1.0 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
@@ -29,13 +30,21 @@ require (
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/stretchr/codecs v0.0.0-20170403063245-04a5b1e1910d // indirect
+	github.com/stretchr/gomniauth v0.0.0-20170717123514-4b6c822be2eb // indirect
+	github.com/stretchr/objx v0.5.0 // indirect
+	github.com/stretchr/signature v0.0.0-20160104132143-168b2a1e1b56 // indirect
+	github.com/stretchr/stew v0.0.0-20130812190256-80ef0842b48b // indirect
+	github.com/stretchr/tracer v0.0.0-20140124184152-66d3696bba97 // indirect
 	github.com/subosito/gotenv v1.4.2 // indirect
 	github.com/tklauser/go-sysconf v0.3.5 // indirect
 	github.com/tklauser/numcpus v0.2.2 // indirect
+	github.com/ugorji/go/codec v1.2.11 // indirect
 	golang.org/x/crypto v0.7.0 // indirect
 	golang.org/x/sys v0.6.0 // indirect
 	golang.org/x/text v0.8.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
+	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22 // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

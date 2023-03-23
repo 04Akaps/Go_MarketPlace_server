@@ -6,11 +6,14 @@ import (
 )
 
 type EnvData struct {
-	HttpServerPort string `mapstructure:"http_server_port"`
-	DbUserName     string `mapstructure:"db_username"`
-	DbPassword     string `mapstructure:"de_password"`
-	DbEndPoint     string `mapstructure:"db_endpoint"`
-	CryptoNodeUrl  string `mapstructure:"crypto_node_url"`
+	HttpServerPort     string `mapstructure:"http_server_port"`
+	DbUserName         string `mapstructure:"db_username"`
+	DbPassword         string `mapstructure:"de_password"`
+	DbEndPoint         string `mapstructure:"db_endpoint"`
+	CryptoNodeUrl      string `mapstructure:"crypto_node_url"`
+	GoogleAuthId       string `mapstructure:"google_auth_id"`
+	GoogleAuthPassword string `mapstructure:"google_auth_password"`
+	AuthKey            string `mapstructure:"auth_key"`
 }
 
 func InitEnv(path string) EnvData {

@@ -15,8 +15,7 @@ func HttpServerInit(envData EnvData, channel chan error) error {
 	log.Println(" ------ Server Start ------ ")
 
 	dbClient := NewDBClient("mysql", envData.DbUserName, envData.DbPassword, "launchpad", envData.DbEndPoint, "3306")
-
-	//sql.Open("mysql", configType.DbUri)
+	initOAuth(envData)
 	return http.ListenAndServe(envData.HttpServerPort, registerHttpRouter(channel, dbClient, envData))
 }
 
@@ -29,6 +28,7 @@ func registerHttpRouter(channel chan error, dbClient *sqlc.Queries, envData EnvD
 
 	registerTestRouter(router)
 	registerLaunchpadRouter(router, channel, dbClient, envData)
+	registerAuthRouter(router, channel)
 
 	corsRouter := c.Handler(logMux)
 	return corsRouter
@@ -49,5 +49,9 @@ func registerLaunchpadRouter(router *mux.Router, channel chan error, dbClient *s
 	launchpadRouter.HandleFunc("", controller.GetLaunchpadByHashValue).Methods("GET")
 	launchpadRouter.HandleFunc("/chainId/{chainId}", controller.GetLaunchpadsByChainId).Methods("GET")
 	launchpadRouter.HandleFunc("", controller.MakeLaunchpad).Methods("POST")
+}
+
+func registerAuthRouter(router *mux.Router, channel chan error) {
+	//authRouter := router.PathPrefix("/auth").Subrouter()
 
 }

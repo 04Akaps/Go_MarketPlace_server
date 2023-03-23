@@ -132,11 +132,6 @@ func (controller *LaunchpadController) GetLaunchpadByHashValue(w http.ResponseWr
 	utils.SuccesResponse(w, launchpad)
 }
 
-type test struct {
-	Name string `json:"name"`
-	Age  string `json:"age"`
-}
-
 func (controller *LaunchpadController) GetLaunchpadsByChainId(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	chainId := vars["chainId"]
