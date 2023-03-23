@@ -2,18 +2,21 @@ package server
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/gorilla/mux"
 	"goServer/customError"
 	sqlc "goServer/mysql/sqlc"
+	"goServer/utils"
 	"net/http"
 )
 
 const (
-	QUERY_ID_EMPTY_STRING = "id값이 빈 문자열 입니다."
+	QUERY_ID_EMPTY_STRING    = "id값이 빈 문자열 입니다."
+	CODE_AT_FAILED           = "CODE At에 실해 했습니다."
+	INVALID_CONTRACT_ADDRESS = "잘못된 Contract주소 입니다."
 )
 
 var (
@@ -53,21 +56,36 @@ type MakeLaunchpadReq struct {
 }
 
 func (controller *LaunchpadController) MakeLaunchpad(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Make Launchpad")
-
-	r.Body = http.MaxBytesReader(w, r.Body, 1048576) // body의 최대 크기
-	dec := json.NewDecoder(r.Body)                   // decoder
-	dec.DisallowUnknownFields()                      //
-
 	var req MakeLaunchpadReq
+
+	dec := utils.BodyParserDecoder(w, r)
 	err := dec.Decode(&req)
 
-	fmt.Println(req.CaAddress)
-
 	if err != nil {
-		customError.NewHandlerError(w, customError.NewPostErrorHandler(err), 200)
+		errorMsg := customError.NewPostErrorHandler(err)
+		controller.ErrorChannel <- errors.New(errorMsg)
+		customError.NewHandlerError(w, errorMsg, 200)
 		return
 	}
+
+	address := common.HexToAddress(req.CaAddress)
+	byteCode, err := controller.cryptoClient.CodeAt(controller.ctx, address, nil)
+
+	if err != nil {
+		controller.ErrorChannel <- errors.New(CODE_AT_FAILED)
+		customError.NewHandlerError(w, CODE_AT_FAILED, 200)
+		return
+	}
+
+	isContractAddress := len(byteCode) > 0
+
+	if !isContractAddress {
+		controller.ErrorChannel <- errors.New(INVALID_CONTRACT_ADDRESS)
+		customError.NewHandlerError(w, INVALID_CONTRACT_ADDRESS, 200)
+		return
+	}
+
+	fmt.Println(address)
 
 	hashValue := req.CaAddress[:7]
 	fmt.Println(hashValue)

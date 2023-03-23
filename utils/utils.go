@@ -31,6 +31,14 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+func BodyParserDecoder(w http.ResponseWriter, r *http.Request) *json.Decoder {
+	r.Body = http.MaxBytesReader(w, r.Body, 1048576) // body의 최대 크기
+	dec := json.NewDecoder(r.Body)                   // decoder
+	dec.DisallowUnknownFields()
+
+	return dec
+}
+
 func SuccesResponse(w http.ResponseWriter, data interface{}) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(data)
