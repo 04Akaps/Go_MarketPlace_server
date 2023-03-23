@@ -10,6 +10,7 @@ type EnvData struct {
 	DbUserName     string `mapstructure:"db_username"`
 	DbPassword     string `mapstructure:"de_password"`
 	DbEndPoint     string `mapstructure:"db_endpoint"`
+	CryptoNodeUrl  string `mapstructure:"crypto_node_url"`
 }
 
 func InitEnv(path string) EnvData {

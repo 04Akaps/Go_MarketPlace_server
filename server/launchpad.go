@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/gorilla/mux"
 	"goServer/customError"
 	sqlc "goServer/mysql/sqlc"
@@ -23,6 +24,7 @@ type LaunchpadController struct {
 	ErrorChannel chan error
 	DBClient     *sqlc.Queries
 	ctx          context.Context
+	cryptoClient *ethclient.Client
 }
 
 type LaunchpadInterface interface {
@@ -31,12 +33,13 @@ type LaunchpadInterface interface {
 	GetLaunchpadsByChainId(http.ResponseWriter, *http.Request)
 }
 
-func NewLaunchpadController(channel chan error, dbClient *sqlc.Queries) LaunchpadInterface {
+func NewLaunchpadController(channel chan error, dbClient *sqlc.Queries, cryptoClient *ethclient.Client) LaunchpadInterface {
 	context := context.Background()
 	return &LaunchpadController{
 		ErrorChannel: channel,
 		DBClient:     dbClient,
 		ctx:          context,
+		cryptoClient: cryptoClient,
 	}
 }
 
