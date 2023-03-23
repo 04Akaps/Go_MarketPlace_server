@@ -18,10 +18,7 @@ const (
 	QUERY_ID_EMPTY_STRING    = "id값이 빈 문자열 입니다."
 	CODE_AT_FAILED           = "CODE At에 실해 했습니다."
 	INVALID_CONTRACT_ADDRESS = "잘못된 Contract주소 입니다."
-)
-
-var (
-	queryIdEmpty = errors.New(QUERY_ID_EMPTY_STRING)
+	INSERT_DB_ERRROR         = "Insert가 실패하였습니다."
 )
 
 type LaunchpadController struct {
@@ -90,7 +87,7 @@ func (controller *LaunchpadController) MakeLaunchpad(w http.ResponseWriter, r *h
 
 	whiteListJSON, _ := json.Marshal(req.WhiteListAddress)
 	airdropListJson, _ := json.Marshal(req.AirdropAddress)
-	//fmt.Println(result)
+
 	dbReq := sqlc.CreateNewLaunchpadParams{
 		HashValue:        hashValue,
 		FirstOwnerEmail:  req.FirstOwnerEmail,
@@ -101,19 +98,23 @@ func (controller *LaunchpadController) MakeLaunchpad(w http.ResponseWriter, r *h
 		WhitelistAddress: airdropListJson,
 	}
 
-	fmt.Println(dbReq)
-
-	//
 	_, err = controller.DBClient.CreateNewLaunchpad(controller.ctx, dbReq)
-	fmt.Println(err)
-	// SQL Insert 필요
+
+	if err != nil {
+		controller.ErrorChannel <- err
+		customError.NewHandlerError(w, INSERT_DB_ERRROR, 200)
+		return
+	}
+
+	customError.NewHandlerError(w, "Success", 200)
+
 }
 
 func (controller *LaunchpadController) GetLaunchpadByHashValue(w http.ResponseWriter, r *http.Request) {
 	hash := r.URL.Query().Get("id")
 	// hash값을 통해서 데이터를 가져 올 예정
 	if hash == "" {
-		controller.ErrorChannel <- queryIdEmpty
+		controller.ErrorChannel <- errors.New(QUERY_ID_EMPTY_STRING)
 		customError.NewHandlerError(w, QUERY_ID_EMPTY_STRING, 200)
 		return
 	}

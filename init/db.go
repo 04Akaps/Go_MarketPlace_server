@@ -12,6 +12,7 @@ import (
 
 func NewDBClient(driver, username, password, table, uri, port string) *sqlc.Queries {
 	sourceUri := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", username, password, uri, port, table)
+
 	dbInstance, err := sql.Open(driver, sourceUri)
 	// RDS만들어서 Connect진행
 

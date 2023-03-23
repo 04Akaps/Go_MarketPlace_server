@@ -13,7 +13,8 @@ import (
 
 func HttpServerInit(envData EnvData, channel chan error) error {
 	log.Println(" ------ Server Start ------ ")
-	dbClient := NewDBClient("mysql", envData.DbUserName, envData.DbPassword, "launchpad", "envData.DbEndPoint", "3306")
+
+	dbClient := NewDBClient("mysql", envData.DbUserName, envData.DbPassword, "launchpad", envData.DbEndPoint, "3306")
 
 	//sql.Open("mysql", configType.DbUri)
 	return http.ListenAndServe(envData.HttpServerPort, registerHttpRouter(channel, dbClient, envData))
