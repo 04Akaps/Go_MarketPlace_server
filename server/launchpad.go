@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
@@ -85,10 +86,26 @@ func (controller *LaunchpadController) MakeLaunchpad(w http.ResponseWriter, r *h
 		return
 	}
 
-	fmt.Println(address)
-
 	hashValue := req.CaAddress[:7]
-	fmt.Println(hashValue)
+
+	whiteListJSON, _ := json.Marshal(req.WhiteListAddress)
+	airdropListJson, _ := json.Marshal(req.AirdropAddress)
+	//fmt.Println(result)
+	dbReq := sqlc.CreateNewLaunchpadParams{
+		HashValue:        hashValue,
+		FirstOwnerEmail:  req.FirstOwnerEmail,
+		CaAddress:        req.CaAddress,
+		ChainID:          req.ChainId,
+		Price:            int32(req.Price),
+		AirdropAddress:   whiteListJSON,
+		WhitelistAddress: airdropListJson,
+	}
+
+	fmt.Println(dbReq)
+
+	//
+	_, err = controller.DBClient.CreateNewLaunchpad(controller.ctx, dbReq)
+	fmt.Println(err)
 	// SQL Insert 필요
 }
 

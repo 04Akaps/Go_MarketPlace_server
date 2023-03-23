@@ -3,7 +3,6 @@ package crypo
 import (
 	"context"
 	"fmt"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"log"
 )
@@ -20,9 +19,10 @@ func NewCryptoClient(nodeUrl string) *ethclient.Client {
 	return cryptoClient
 }
 
-func GetTxMessage(ctx context.Context, client *ethclient.Client, hash string) {
-	txHash := common.HexToHash(hash)
-
-	tx, _, _ := client.TransactionByHash(ctx, txHash)
-	// 작업 중
-}
+//
+//func GetTxMessage(ctx context.Context, client *ethclient.Client, hash string) {
+//	txHash := common.HexToHash(hash)
+//
+//	tx, _, _ := client.TransactionByHash(ctx, txHash)
+//	// 작업 중
+//}

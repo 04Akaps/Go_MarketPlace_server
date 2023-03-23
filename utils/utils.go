@@ -39,6 +39,10 @@ func BodyParserDecoder(w http.ResponseWriter, r *http.Request) *json.Decoder {
 	return dec
 }
 
+func ArrayToJSON(array []string) {
+
+}
+
 func SuccesResponse(w http.ResponseWriter, data interface{}) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(data)
