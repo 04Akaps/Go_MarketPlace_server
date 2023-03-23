@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/gorilla/mux"
@@ -12,13 +11,17 @@ import (
 	sqlc "goServer/mysql/sqlc"
 	"goServer/utils"
 	"net/http"
+	"strings"
 )
 
 const (
-	QUERY_ID_EMPTY_STRING    = "id값이 빈 문자열 입니다."
-	CODE_AT_FAILED           = "CODE At에 실해 했습니다."
-	INVALID_CONTRACT_ADDRESS = "잘못된 Contract주소 입니다."
-	INSERT_DB_ERRROR         = "Insert가 실패하였습니다."
+	QUERY_ID_EMPTY_STRING     = "id값이 빈 문자열 입니다."
+	CODE_AT_FAILED            = "CODE At에 실해 했습니다."
+	INVALID_CONTRACT_ADDRESS  = "잘못된 Contract주소 입니다."
+	INSERT_DB_ERRROR          = "Insert가 실패하였습니다."
+	GET_LAUNCHPAD_BY_HASH_ID  = "Hash ID를 통한 Get 요청 실패"
+	HASH_EMPRY_STRING         = "hash값이 빈 문자열 입니다."
+	GET_LAUNCHPAD_BY_CHAIN_ID = "Chain ID를 통한 Get 요청 실패"
 )
 
 type LaunchpadController struct {
@@ -112,27 +115,45 @@ func (controller *LaunchpadController) MakeLaunchpad(w http.ResponseWriter, r *h
 
 func (controller *LaunchpadController) GetLaunchpadByHashValue(w http.ResponseWriter, r *http.Request) {
 	hash := r.URL.Query().Get("id")
-	// hash값을 통해서 데이터를 가져 올 예정
-	if hash == "" {
+	if len(strings.TrimSpace(hash)) == 0 {
 		controller.ErrorChannel <- errors.New(QUERY_ID_EMPTY_STRING)
 		customError.NewHandlerError(w, QUERY_ID_EMPTY_STRING, 200)
 		return
 	}
 
-	fmt.Println(hash)
+	launchpad, err := controller.DBClient.GetLaunchpadByHash(controller.ctx, hash)
 
-	// 데이터 문제 있을 떄
-	//customError.NewHandlerError(w, "ac", 200)
+	if err != nil {
+		controller.ErrorChannel <- err
+		customError.NewHandlerError(w, GET_LAUNCHPAD_BY_HASH_ID, 200)
+		return
+	}
 
-	// 데이터 문제 없을 떄,
-	//utils.SuccesResponse(w, data)
+	utils.SuccesResponse(w, launchpad)
+}
+
+type test struct {
+	Name string `json:"name"`
+	Age  string `json:"age"`
 }
 
 func (controller *LaunchpadController) GetLaunchpadsByChainId(w http.ResponseWriter, r *http.Request) {
-
 	vars := mux.Vars(r)
 	chainId := vars["chainId"]
-	//r.URL.pa
 
-	fmt.Println(chainId)
+	if len(strings.TrimSpace(chainId)) == 0 {
+		controller.ErrorChannel <- errors.New(HASH_EMPRY_STRING)
+		customError.NewHandlerError(w, HASH_EMPRY_STRING, 200)
+		return
+	}
+
+	launchpads, err := controller.DBClient.GetLaunchpadByChainId(controller.ctx, chainId)
+
+	if err != nil {
+		controller.ErrorChannel <- err
+		customError.NewHandlerError(w, GET_LAUNCHPAD_BY_CHAIN_ID, 200)
+		return
+	}
+
+	utils.SuccesResponse(w, launchpads)
 }
