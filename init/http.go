@@ -26,11 +26,12 @@ func registerHttpRouter(channel chan error, dbClient *sqlc.Queries, envData EnvD
 	logMux := utils.LoggingMiddleware(router) // 들어오는 요청에 대해서 로그 설정
 	c := cors.AllowAll()                      // 일단 개발 편의상을 위해 전체 수용
 
+	corsRouter := c.Handler(logMux)
+
 	registerTestRouter(router)
 	registerLaunchpadRouter(router, channel, dbClient, envData)
 	registerAuthRouter(router, channel)
 
-	corsRouter := c.Handler(logMux)
 	return corsRouter
 }
 

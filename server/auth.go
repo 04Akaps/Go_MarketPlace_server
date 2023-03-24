@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/objx"
 	"goServer/customError"
 	"net/http"
-	"os"
 )
 
 const (
@@ -41,8 +40,6 @@ func (controller *AuthController) Auth(w http.ResponseWriter, r *http.Request) {
 	action := vars["action"]
 	provider := vars["provider"]
 
-	fmt.Println(r.URL.RawQuery)
-
 	switch action {
 	case "login":
 		provider, err := gomniauth.Provider(provider)
@@ -58,18 +55,19 @@ func (controller *AuthController) Auth(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		fmt.Println(loginUrl)
-
 		// Location을 이동 시켜야 하나...?
+
 		w.Header().Set("Location", loginUrl)
 		w.WriteHeader(http.StatusTemporaryRedirect)
 	case "callback":
+
 		provider, err := gomniauth.Provider(provider)
 
 		if err != nil {
 			customError.NewHandlerError(w, OAUTH_PROVIDER_NOT_FOUND, http.StatusBadRequest)
 			return
 		}
+
 		credentials, err := provider.CompleteAuth(objx.MustFromURLQuery(r.URL.RawQuery))
 		if err != nil {
 			customError.NewHandlerError(w, OAUTH_CREDENTIALS_ERROR, http.StatusInternalServerError)
@@ -83,11 +81,12 @@ func (controller *AuthController) Auth(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		fmt.Println(user)
+		fmt.Println(user.Name())
+
 		// Paseto를 통해 JWT토큰을 만들지 말지 고민 중
 		// 만든뒤에 middleWare에 추가하여, Token을 검증 하는 것이 좋을까 고민 중
 
-		w.Header().Set("Location", os.Getenv("BASE_URL"))
+		w.Header().Set("Location", "http://localhost:3000/")
 		w.WriteHeader(http.StatusTemporaryRedirect)
 
 	default:

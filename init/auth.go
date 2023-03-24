@@ -6,7 +6,6 @@ import (
 	"github.com/stretchr/gomniauth/providers/google"
 	"net"
 	"os"
-	"strings"
 )
 
 func initOAuth(envData EnvData) {
@@ -40,12 +39,12 @@ func initOAuth(envData EnvData) {
 	}
 
 	os.Setenv("BASE_URL", baseUri)
-	baseUri = strings.Join([]string{baseUri, "/auth"}, "")
+	//baseUri = strings.Join([]string{baseUri, "/auth"}, "")
 
 	//192.168.219.101/auth -> 이런 형태가 된다.
 
 	gomniauth.SetSecurityKey(authKey)
 	gomniauth.WithProviders(
-		google.New(envData.GoogleAuthId, envData.GoogleAuthPassword, strings.Join([]string{baseUri, "/google"}, "")),
+		google.New(envData.GoogleAuthId, envData.GoogleAuthPassword, "http://localhost/auth/callback/google"),
 	)
 }
