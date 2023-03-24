@@ -5,6 +5,7 @@ import (
 	"github.com/rs/cors"
 	"goServer/crypo"
 	sqlc "goServer/mysql/sqlc"
+	"goServer/paseto"
 	"goServer/server"
 	"goServer/utils"
 	"log"
@@ -23,14 +24,17 @@ func registerHttpRouter(channel chan error, dbClient *sqlc.Queries, envData EnvD
 	// 라우팅 관련해서는 Mux쓰는 것이 훨씬 깔끔하고 좋다고 생각하기 떄문에 Mux로 관리
 	router := mux.NewRouter()
 
-	logMux := utils.LoggingMiddleware(router) // 들어오는 요청에 대해서 로그 설정
-	c := cors.AllowAll()                      // 일단 개발 편의상을 위해 전체 수용
+	newPasto := paseto.NewPasetoMaker(envData.PaseToKey)
+
+	logMux := utils.LoggingMiddleware(router, newPasto) // 들어오는 요청에 대해서 로그 설정
+	c := cors.AllowAll()                                // 일단 개발 편의상을 위해 전체 수용
 
 	corsRouter := c.Handler(logMux)
 
 	registerTestRouter(router)
+
 	registerLaunchpadRouter(router, channel, dbClient, envData)
-	registerAuthRouter(router, channel)
+	registerAuthRouter(router, channel, newPasto)
 
 	return corsRouter
 }
@@ -42,8 +46,7 @@ func registerTestRouter(router *mux.Router) {
 }
 
 func registerLaunchpadRouter(router *mux.Router, channel chan error, dbClient *sqlc.Queries, envData EnvData) {
-	// MarketPlace에서 모든 블록을 계속 패칭하는 것은 개인 개발상으로 어렵고, 리소스 낭비가 너무 하다고정생각이 들기 떄문에
-	// Launchpad에서 만들어지는 NFT를 거래하는 부분만 다룰 예정
+
 	launchpadRouter := router.PathPrefix("/launchpad").Subrouter()
 	controller := server.NewLaunchpadController(channel, dbClient, crypo.NewCryptoClient(envData.CryptoNodeUrl))
 
@@ -52,10 +55,10 @@ func registerLaunchpadRouter(router *mux.Router, channel chan error, dbClient *s
 	launchpadRouter.HandleFunc("", controller.MakeLaunchpad).Methods("POST")
 }
 
-func registerAuthRouter(router *mux.Router, channel chan error) {
+func registerAuthRouter(router *mux.Router, channel chan error, paseto paseto.PasetoInterface) {
 	authRouter := router.PathPrefix("/auth").Subrouter()
 
-	authController := server.NewAuthController()
+	authController := server.NewAuthController(channel, paseto)
 
 	authRouter.HandleFunc("/{action}/{provider}", authController.Auth)
 	authRouter.HandleFunc("/logout", authController.Logout)

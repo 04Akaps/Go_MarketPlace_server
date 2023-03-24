@@ -14,6 +14,7 @@ type EnvData struct {
 	GoogleAuthId       string `mapstructure:"google_auth_id"`
 	GoogleAuthPassword string `mapstructure:"google_auth_password"`
 	AuthKey            string `mapstructure:"auth_key"`
+	PaseToKey          string `mapstructure:"paseto_key""`
 }
 
 func InitEnv(path string) EnvData {

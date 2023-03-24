@@ -1,4 +1,4 @@
-package init
+package paseto
 
 import (
 	"crypto/rand"
@@ -12,13 +12,18 @@ type PasetoMaker struct {
 	Key    []byte
 }
 
-type payload struct {
-	userName     string
-	currentTime  time.Time
-	randomString string
+type PasetoInterface interface {
+	CreateToken(string) (string, error)
+	VerifyToken(token string) error
 }
 
-func NewPasetoMaker(key string) *PasetoMaker {
+type Payload struct {
+	UserName     string
+	CurrentTime  time.Time
+	RandomString string
+}
+
+func NewPasetoMaker(key string) PasetoInterface {
 	return &PasetoMaker{
 		Paseto: paseto.NewV2(),
 		Key:    []byte(key),
@@ -31,27 +36,21 @@ func (maker *PasetoMaker) CreateToken(userName string) (string, error) {
 
 	randomString := base64.URLEncoding.EncodeToString(randomBytes)
 
-	newPayload := &payload{
-		currentTime:  time.Now(),
-		randomString: randomString,
-		userName:     userName,
+	newPayload := &Payload{
+		CurrentTime:  time.Now(),
+		RandomString: randomString,
+		UserName:     userName,
 	}
 
 	return maker.Paseto.Encrypt(maker.Key, newPayload, nil)
 }
 
-func (maker *PasetoMaker) VerifyToken(token, userName string) (bool, error) {
-	payload := &payload{}
-
+func (maker *PasetoMaker) VerifyToken(token string) error {
+	payload := &Payload{}
 	err := maker.Paseto.Decrypt(token, maker.Key, payload, nil)
-
 	if err != nil {
-		return false, err
+		return err
 	}
 
-	if payload.userName == userName {
-		return true, nil
-	}
-
-	return false, err
+	return nil
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/gomniauth"
 	"github.com/stretchr/objx"
 	"goServer/customError"
+	"goServer/paseto"
 	"net/http"
 )
 
@@ -16,10 +17,13 @@ const (
 	OAUTH_CREDENTIALS_ERROR      = "OAuth의 Auth에러"
 	OAUTH_GET_USER_ERROR         = "불분명한 USER"
 	OAUTH_GET_CALLBACK_URL_ERROR = "callBack URL을 찾지 못하였습니다."
+	PASETO_TOKEN_CREATE_FAILED   = "PaseToken 생성 실패"
 )
 
 type AuthController struct {
-	ctx context.Context
+	ctx     context.Context
+	channel chan error
+	paseto  paseto.PasetoInterface
 }
 
 type AuthInterface interface {
@@ -27,10 +31,12 @@ type AuthInterface interface {
 	Logout(http.ResponseWriter, *http.Request)
 }
 
-func NewAuthController() AuthInterface {
+func NewAuthController(channel chan error, paseto paseto.PasetoInterface) AuthInterface {
 	context := context.Background()
 	return &AuthController{
-		ctx: context,
+		ctx:     context,
+		channel: channel,
+		paseto:  paseto,
 	}
 }
 
@@ -44,6 +50,7 @@ func (controller *AuthController) Auth(w http.ResponseWriter, r *http.Request) {
 	case "login":
 		provider, err := gomniauth.Provider(provider)
 		if err != nil {
+			controller.channel <- err
 			customError.NewHandlerError(w, OAUTH_PROVIDER_NOT_FOUND, http.StatusBadRequest)
 			return
 		}
@@ -51,6 +58,7 @@ func (controller *AuthController) Auth(w http.ResponseWriter, r *http.Request) {
 		loginUrl, err := provider.GetBeginAuthURL(nil, nil)
 
 		if err != nil {
+			controller.channel <- err
 			customError.NewHandlerError(w, OAUTH_GET_CALLBACK_URL_ERROR, http.StatusInternalServerError)
 			return
 		}
@@ -64,12 +72,14 @@ func (controller *AuthController) Auth(w http.ResponseWriter, r *http.Request) {
 		provider, err := gomniauth.Provider(provider)
 
 		if err != nil {
+			controller.channel <- err
 			customError.NewHandlerError(w, OAUTH_PROVIDER_NOT_FOUND, http.StatusBadRequest)
 			return
 		}
 
 		credentials, err := provider.CompleteAuth(objx.MustFromURLQuery(r.URL.RawQuery))
 		if err != nil {
+			controller.channel <- err
 			customError.NewHandlerError(w, OAUTH_CREDENTIALS_ERROR, http.StatusInternalServerError)
 			return
 		}
@@ -77,14 +87,24 @@ func (controller *AuthController) Auth(w http.ResponseWriter, r *http.Request) {
 		user, err := provider.GetUser(credentials)
 
 		if err != nil {
+			controller.channel <- err
 			customError.NewHandlerError(w, OAUTH_GET_USER_ERROR, http.StatusInternalServerError)
 			return
 		}
 
-		fmt.Println(user.Name())
+		newToken, err := controller.paseto.CreateToken(user.Name())
 
-		// Paseto를 통해 JWT토큰을 만들지 말지 고민 중
-		// 만든뒤에 middleWare에 추가하여, Token을 검증 하는 것이 좋을까 고민 중
+		if err != nil {
+			controller.channel <- err
+			customError.NewHandlerError(w, PASETO_TOKEN_CREATE_FAILED, http.StatusInternalServerError)
+			return
+		}
+
+		http.SetCookie(w, &http.Cookie{
+			Name:  "auth",
+			Value: newToken,
+			Path:  "/",
+		})
 
 		w.Header().Set("Location", "http://localhost:3000/")
 		w.WriteHeader(http.StatusTemporaryRedirect)
@@ -98,4 +118,14 @@ func (controller *AuthController) Auth(w http.ResponseWriter, r *http.Request) {
 
 func (controller *AuthController) Logout(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Logout")
+
+	http.SetCookie(w, &http.Cookie{
+		Name:   "auth",
+		Value:  "",
+		Path:   "/",
+		MaxAge: -1,
+	})
+
+	w.Header().Set("Location", "http://localhost:3000")
+	w.WriteHeader(http.StatusTemporaryRedirect)
 }
