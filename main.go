@@ -1,10 +1,14 @@
 package main
 
 import (
+	"context"
+	"github.com/redis/go-redis/v9"
 	"goServer/customError"
 	initData "goServer/init"
+	redis2 "goServer/redis"
 	"goServer/utils"
 	"log"
+	"time"
 )
 
 var envData initData.EnvData
@@ -24,11 +28,24 @@ func init() {
 
 func main() {
 
+	option := &redis.Options{
+		DB:              0,
+		ClientName:      "NFT_Market_go",
+		ConnMaxIdleTime: 1 * time.Second,
+		ConnMaxLifetime: 1 * time.Second,
+		MaxIdleConns:    1000,
+		PoolSize:        25,
+	}
+
+	client := redis2.NewRedisClient(option, context.Background())
+
 	err := initData.HttpServerInit(envData, httpServerErrLog.HttpServerErrLog)
 
 	if err != nil {
 		log.Fatal(err) // 굳이 서버를 안끌 필요가 없으니 그냥 바로 Fatal
 	}
+
+	//rgb := redis.NewClient)
 
 	//// 메인 루틴이 죽으면 모든 루틴이 죽어버리니깐 프로세스에 대한 시그널로 메인 루틴을 안죽게 설정
 	//stop := make(chan os.Signal, 1)
