@@ -3,7 +3,6 @@ package redis
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	redis "github.com/redis/go-redis/v9"
 	"log"
 	"net"
@@ -23,9 +22,9 @@ type RedisErrorLog struct {
 }
 
 type RedisImpl interface {
-	SetDataToRedis(string, interface{}) error
+	SetDataToRedis(string, interface{}) ([]byte, error)
 	GetDataFromRedis(string) ([]byte, error)
-	DeleteDataFromRedis(string) error
+	DeleteDataFromRedis(string) ([]byte, error)
 	SetRedisConn()
 }
 
@@ -71,23 +70,16 @@ func (r *RedisObject) SetRedisConn() {
 	r.Conn = r.RedisClient.Conn()
 }
 
-func (r RedisObject) SetDataToRedis(key string, value interface{}) error {
+func (r RedisObject) SetDataToRedis(key string, value interface{}) ([]byte, error) {
 	if r.Conn == nil {
 		r.SetRedisConn()
 	}
 
 	byteData, err := json.Marshal(value)
-
-	if err != nil {
-		return err
-	}
-
 	err = r.Conn.Set(r.Ctx, key, string(byteData), time.Hour).Err()
-	if err != nil {
-		return errors.New("redis Set Error")
-	}
+	err = r.redisErrorHandler(func() ([]byte, error) { return r.SetDataToRedis(key, value) }, err)
 
-	return nil
+	return byteData, err
 }
 
 func (r *RedisObject) GetDataFromRedis(key string) ([]byte, error) {
@@ -98,26 +90,16 @@ func (r *RedisObject) GetDataFromRedis(key string) ([]byte, error) {
 	val, err := r.Conn.Get(r.Ctx, key).Bytes()
 
 	err = r.redisErrorHandler(func() ([]byte, error) { return r.GetDataFromRedis(key) }, err)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return val, nil
+	return val, err
 }
 
-func (r *RedisObject) DeleteDataFromRedis(key string) error {
+func (r *RedisObject) DeleteDataFromRedis(key string) ([]byte, error) {
 	if r.Conn == nil {
 		r.SetRedisConn()
 	}
-
 	_, err := r.Conn.Del(r.Ctx, key).Result()
-
-	if err != nil {
-		return err
-	}
-
-	return nil
+	err = r.redisErrorHandler(func() ([]byte, error) { return r.DeleteDataFromRedis(key) }, err)
+	return nil, err
 }
 
 func (r *RedisObject) redisErrorHandler(f func() ([]byte, error), err error) error {
@@ -127,13 +109,16 @@ func (r *RedisObject) redisErrorHandler(f func() ([]byte, error), err error) err
 		return nil
 	}
 
-	if err == redis.TxFailedErr {
-		r.ErrorLog.RedisErrorChannel <- err
-	}
+	r.ErrorLog.RedisErrorChannel <- err
+	// 어차피 같은 로직이니깐 그냥 채널에 에러를 주입
 
-	if err == redis.Nil {
-		r.ErrorLog.RedisErrorChannel <- err
-	}
+	//if err == redis.TxFailedErr {
+	//	r.ErrorLog.RedisErrorChannel <- err
+	//}
+
+	//if err == redis.Nil {
+	//	r.ErrorLog.RedisErrorChannel <- err
+	//}
 
 	return err
 }
