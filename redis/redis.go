@@ -81,7 +81,7 @@ func (r RedisObject) SetDataToRedis(key string, value interface{}) ([]byte, erro
 	}
 
 	byteData, err := json.Marshal(value)
-	err = r.Conn.Set(r.Ctx, key, string(byteData), time.Hour).Err()
+	err = r.Conn.Set(r.Ctx, key, string(byteData), time.Hour).Err() // 시간은 원래 인자 받아서 처리 해야 함!!
 	err = r.redisErrorHandler(func() ([]byte, error) { return r.SetDataToRedis(key, value) }, err)
 
 	return byteData, err
