@@ -1,8 +1,10 @@
 package eventListener
 
 import (
+	"fmt"
 	"goServer/eventListener/proto"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/reflection"
 	"log"
 	"net"
@@ -10,6 +12,13 @@ import (
 
 type server struct {
 	proto.NewContractServiceServer
+}
+
+type gRpcOption struct{}
+
+func (g *gRpcOption) apply(opts *grpc.ServerOption) grpc.ServerOption {
+	fmt.Println(g)
+	return nil
 }
 
 func GRpcServer() {
@@ -20,7 +29,10 @@ func GRpcServer() {
 		log.Fatal("Error  : ", err)
 	}
 
-	var opts []grpc.ServerOption
+	opts := []grpc.ServerOption{
+		grpc.MaxRecvMsgSize(3),
+		grpc.Creds(credentials.NewTLS(nil)),
+	}
 
 	gRpcClient := grpc.NewServer(opts...)
 	proto.RegisterNewContractServiceServer(gRpcClient, &server{})
