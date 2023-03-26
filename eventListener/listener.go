@@ -1,7 +1,6 @@
-package main
+package eventListener
 
 import (
-	"fmt"
 	"goServer/eventListener/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -13,8 +12,8 @@ type server struct {
 	proto.NewContractServiceServer
 }
 
-func main() {
-	log.Println("------------- Proto gRPC CLient Server ----------")
+func GRpcServer() {
+	log.Println("------------- Proto gRPC Client Server ----------")
 
 	lis, err := net.Listen("tcp", "0.0.0.0:50051")
 	if err != nil {
@@ -27,7 +26,7 @@ func main() {
 	proto.RegisterNewContractServiceServer(gRpcClient, &server{})
 	reflection.Register(gRpcClient)
 
-	fmt.Println("gRPC Server Start")
+	log.Println(" ------------- gRPC Server Start ------------- ")
 
 	if err := gRpcClient.Serve(lis); err != nil {
 		log.Fatal(" : Error is ocured : ", err)

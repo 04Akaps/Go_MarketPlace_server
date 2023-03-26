@@ -1,2 +1,3 @@
 app.env
 /serverLog/httpErrorLog/*.log
+/serverLog/redisLog/*.log

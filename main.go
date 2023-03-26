@@ -1,6 +1,7 @@
 package main
 
 import (
+	gRPC "goServer/eventListener"
 	initData "goServer/init"
 	"log"
 )
@@ -14,11 +15,11 @@ func init() {
 }
 
 func main() {
+	go gRPC.GRpcServer()
 
 	err := initData.HttpServerInit(envData)
 
 	if err != nil {
 		log.Fatal(err) // 굳이 서버를 안끌 필요가 없으니 그냥 바로 Fatal
 	}
-
 }
