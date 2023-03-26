@@ -1,19 +1,23 @@
 package init
 
 import (
+	"context"
 	"github.com/gorilla/mux"
+	"github.com/redis/go-redis/v9"
 	"github.com/rs/cors"
 	"goServer/crypo"
 	sqlc "goServer/mysql/sqlc"
 	"goServer/paseto"
+	r "goServer/redis"
 	"goServer/server"
 	"goServer/utils"
 	"log"
 	"net/http"
+	"time"
 )
 
 func HttpServerInit(envData EnvData, channel chan error) error {
-	defer log.Println(" ------ Server Start ------ ")
+	log.Println(" ------ Server Start ------ ")
 
 	dbClient := NewDBClient("mysql", envData.DbUserName, envData.DbPassword, "launchpad", envData.DbEndPoint, "3306")
 	initOAuth(envData)
@@ -50,8 +54,19 @@ func registerLaunchpadRouter(router *mux.Router, channel chan error, dbClient *s
 	launchpadRouter := router.PathPrefix("/launchpad").Subrouter()
 	controller := server.NewLaunchpadController(channel, dbClient, crypo.NewCryptoClient(envData.CryptoNodeUrl))
 
-	launchpadRouter.HandleFunc("", controller.GetLaunchpadByHashValue).Methods("GET")
-	launchpadRouter.HandleFunc("/chainId/{chainId}", controller.GetLaunchpadsByChainId).Methods("GET")
+	option := &redis.Options{
+		DB:              0,
+		ClientName:      "NFT_Market_go",
+		ConnMaxIdleTime: 30 * time.Minute,
+		ConnMaxLifetime: 1 * time.Minute,
+		MaxIdleConns:    1000,
+		PoolSize:        25,
+	}
+	client := r.NewRedisClient(option, context.Background())
+	client.SetRedisLoggerFile(utils.GetLogFile("redisLog/"), make(chan error))
+
+	launchpadRouter.HandleFunc("", utils.RedisLaunchpadMiddleWare(http.HandlerFunc(controller.GetLaunchpadByHashValue), client)).Methods("GET")
+	launchpadRouter.HandleFunc("/chainId/{chainId}", utils.RedisLaunchpadMiddleWare(http.HandlerFunc(controller.GetLaunchpadsByChainId), client)).Methods("GET")
 	launchpadRouter.HandleFunc("", controller.MakeLaunchpad).Methods("POST")
 }
 

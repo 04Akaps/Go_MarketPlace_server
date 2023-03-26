@@ -3,6 +3,7 @@ package init
 import (
 	"github.com/spf13/viper"
 	"log"
+	"os"
 )
 
 type EnvData struct {
@@ -15,6 +16,9 @@ type EnvData struct {
 	GoogleAuthPassword string `mapstructure:"google_auth_password"`
 	AuthKey            string `mapstructure:"auth_key"`
 	PaseToKey          string `mapstructure:"paseto_key""`
+	RedisAddr          string `mapstructure:"redis_addr""`
+	RedisUser          string `mapstructure:"redis_user""`
+	RedisPassword      string `mapstructure:"redis_password""`
 }
 
 func InitEnv(path string) EnvData {
@@ -31,6 +35,10 @@ func InitEnv(path string) EnvData {
 	if err := viper.Unmarshal(&goConfig); err != nil {
 		log.Fatal("env Marshal Error : &w", err)
 	}
+
+	os.Setenv("redis_addr", goConfig.RedisAddr)
+	os.Setenv("redis_user", goConfig.RedisUser)
+	os.Setenv("redis_password", goConfig.RedisPassword)
 
 	return goConfig
 }

@@ -6,6 +6,7 @@ import (
 	redis "github.com/redis/go-redis/v9"
 	"log"
 	"net"
+	"os"
 	"time"
 )
 
@@ -26,9 +27,10 @@ type RedisImpl interface {
 	GetDataFromRedis(string) ([]byte, error)
 	DeleteDataFromRedis(string) ([]byte, error)
 	SetRedisConn()
+	SetRedisLoggerFile(*log.Logger, chan error)
 }
 
-func (r *RedisObject) RedisErrorChannelInit() {
+func (r *RedisObject) redisErrorChannelInit() {
 	go func() {
 		for {
 			select {
@@ -38,6 +40,12 @@ func (r *RedisObject) RedisErrorChannelInit() {
 			}
 		}
 	}()
+}
+
+func (r *RedisObject) SetRedisLoggerFile(logger *log.Logger, channel chan error) {
+	r.ErrorLog.Logger = logger
+	r.ErrorLog.RedisErrorChannel = channel
+	r.redisErrorChannelInit()
 }
 
 func NewRedisClient(option *redis.Options, ctx context.Context) RedisImpl {
@@ -51,13 +59,10 @@ func NewRedisClient(option *redis.Options, ctx context.Context) RedisImpl {
 		}
 		return conn, nil
 	}
-	option.Addr = "redis-11586.c289.us-west-1-2.ec2.cloud.redislabs.com:11586"
 
-	//os.Getenv("redis_addr")
+	option.Addr = os.Getenv("redis_addr")
 	option.CredentialsProvider = func() (string, string) {
-
-		return "default", "qVp8Gy97gyTJWbK8VMueQi7xEw0fqgmR"
-		//return os.Getenv("redis_user_name"), os.Getenv("redis_password")
+		return os.Getenv("redis_user"), os.Getenv("redis_password")
 	}
 
 	return &RedisObject{
@@ -86,9 +91,7 @@ func (r *RedisObject) GetDataFromRedis(key string) ([]byte, error) {
 	if r.Conn == nil {
 		r.SetRedisConn()
 	}
-
 	val, err := r.Conn.Get(r.Ctx, key).Bytes()
-
 	err = r.redisErrorHandler(func() ([]byte, error) { return r.GetDataFromRedis(key) }, err)
 	return val, err
 }

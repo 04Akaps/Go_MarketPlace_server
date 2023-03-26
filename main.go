@@ -1,14 +1,10 @@
 package main
 
 import (
-	"context"
-	"github.com/redis/go-redis/v9"
 	"goServer/customError"
 	initData "goServer/init"
-	redis2 "goServer/redis"
 	"goServer/utils"
 	"log"
-	"time"
 )
 
 var envData initData.EnvData
@@ -20,24 +16,13 @@ func init() {
 
 	httpServerErrLog = customError.HttpServerLog{
 		HttpServerErrLog: make(chan error),
-		Logger:           utils.GetHttpLogFile("httpErrorLog/"),
+		Logger:           utils.GetLogFile("httpErrorLog/"),
 	}
 	httpServerErrLog.HttpErrorChannelInit()
 
 }
 
 func main() {
-
-	option := &redis.Options{
-		DB:              0,
-		ClientName:      "NFT_Market_go",
-		ConnMaxIdleTime: 1 * time.Second,
-		ConnMaxLifetime: 1 * time.Second,
-		MaxIdleConns:    1000,
-		PoolSize:        25,
-	}
-
-	redis2.NewRedisClient(option, context.Background())
 
 	err := initData.HttpServerInit(envData, httpServerErrLog.HttpServerErrLog)
 
