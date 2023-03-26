@@ -6,6 +6,7 @@ import (
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/cors"
 	"goServer/crypo"
+	"goServer/customError"
 	sqlc "goServer/mysql/sqlc"
 	"goServer/paseto"
 	r "goServer/redis"
@@ -16,15 +17,15 @@ import (
 	"time"
 )
 
-func HttpServerInit(envData EnvData, channel chan error) error {
+func HttpServerInit(envData EnvData) error {
 	log.Println(" ------ Server Start ------ ")
 
 	dbClient := NewDBClient("mysql", envData.DbUserName, envData.DbPassword, "launchpad", envData.DbEndPoint, "3306")
 	initOAuth(envData)
-	return http.ListenAndServe(envData.HttpServerPort, registerHttpRouter(channel, dbClient, envData))
+	return http.ListenAndServe(envData.HttpServerPort, registerHttpRouter(dbClient, envData))
 }
 
-func registerHttpRouter(channel chan error, dbClient *sqlc.Queries, envData EnvData) http.Handler {
+func registerHttpRouter(dbClient *sqlc.Queries, envData EnvData) http.Handler {
 	// 라우팅 관련해서는 Mux쓰는 것이 훨씬 깔끔하고 좋다고 생각하기 떄문에 Mux로 관리
 	router := mux.NewRouter()
 
@@ -35,10 +36,15 @@ func registerHttpRouter(channel chan error, dbClient *sqlc.Queries, envData EnvD
 
 	corsRouter := c.Handler(logMux)
 
-	registerTestRouter(router)
+	httpServerErrLog := customError.HttpServerLog{
+		HttpServerErrLog: make(chan error),
+		Logger:           utils.GetLogFile("httpErrorLog/"),
+	}
+	httpServerErrLog.HttpErrorChannelInit()
 
-	registerLaunchpadRouter(router, channel, dbClient, envData)
-	registerAuthRouter(router, channel, newPasto)
+	registerTestRouter(router)
+	registerLaunchpadRouter(router, httpServerErrLog.HttpServerErrLog, dbClient, envData)
+	registerAuthRouter(router, httpServerErrLog.HttpServerErrLog, newPasto)
 
 	return corsRouter
 }

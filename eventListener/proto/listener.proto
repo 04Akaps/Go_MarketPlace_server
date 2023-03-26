@@ -1,0 +1,21 @@
+// SQS와 Proto중 고민하다가... SQS가 맞지만... Proto로 만들고 싶어서 Proto로 작업
+
+syntax = "proto3";
+option go_package = "/proto";
+
+message NewContract {
+  string contract = 1;
+}
+
+message CreateNewContractRequest {
+  NewContract newContract = 1;
+}
+
+message CreateNewContractResponse {
+  NewContract newContract = 1;
+}
+
+service NewContractService {
+  rpc CreateNewContract(CreateNewContractRequest) returns(CreateNewContractResponse);
+}
+
