@@ -25,9 +25,24 @@ Paseto
 
 내부에 app.env로 설정하여 다음과 같은 설정을 실행
 
-db_uri = ""
 
-http_server_port = ""
+http_server_port
+
+db_username
+de_password
+db_endpoint
+
+crypto_node_url
+
+google_auth_id         
+google_auth_password   
+auth_key 
+
+paseto_key
+
+redis_addr 
+redis_user 
+redis_password 
 
 # 프로젝트 개요
 MarketPlace를 하나 만들 예정
