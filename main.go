@@ -37,7 +37,7 @@ func main() {
 		PoolSize:        25,
 	}
 
-	client := redis2.NewRedisClient(option, context.Background())
+	redis2.NewRedisClient(option, context.Background())
 
 	err := initData.HttpServerInit(envData, httpServerErrLog.HttpServerErrLog)
 
@@ -45,11 +45,4 @@ func main() {
 		log.Fatal(err) // 굳이 서버를 안끌 필요가 없으니 그냥 바로 Fatal
 	}
 
-	//rgb := redis.NewClient)
-
-	//// 메인 루틴이 죽으면 모든 루틴이 죽어버리니깐 프로세스에 대한 시그널로 메인 루틴을 안죽게 설정
-	//stop := make(chan os.Signal, 1)
-	//signal.Notify(stop, os.Interrupt)
-	//<-stop
-	// 테스트 용으로 작성한 것이기 떄문에 일단 주석
 }

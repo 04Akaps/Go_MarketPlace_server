@@ -24,13 +24,6 @@ func (httpServerLog *HttpServerLog) HttpErrorChannelInit() {
 			}
 		}
 	}()
-
-}
-
-type Launchpad struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-	// 기타 필드
 }
 
 type CustomError struct {

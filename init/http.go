@@ -13,7 +13,7 @@ import (
 )
 
 func HttpServerInit(envData EnvData, channel chan error) error {
-	log.Println(" ------ Server Start ------ ")
+	defer log.Println(" ------ Server Start ------ ")
 
 	dbClient := NewDBClient("mysql", envData.DbUserName, envData.DbPassword, "launchpad", envData.DbEndPoint, "3306")
 	initOAuth(envData)
@@ -27,7 +27,7 @@ func registerHttpRouter(channel chan error, dbClient *sqlc.Queries, envData EnvD
 	newPasto := paseto.NewPasetoMaker(envData.PaseToKey)
 
 	logMux := utils.LoggingMiddleware(router, newPasto) // 들어오는 요청에 대해서 로그 설정
-	c := cors.AllowAll()                                // 일단 개발 편의상을 위해 전체 수용
+	c := cors.AllowAll()                                // 개발 편의상을 위해 전체 수용
 
 	corsRouter := c.Handler(logMux)
 

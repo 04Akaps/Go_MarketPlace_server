@@ -2,8 +2,10 @@ package redis
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	redis "github.com/redis/go-redis/v9"
+	"log"
 	"net"
 	"time"
 )
@@ -12,13 +14,31 @@ type RedisObject struct {
 	RedisClient *redis.Client
 	Ctx         context.Context
 	Conn        *redis.Conn
+	ErrorLog    RedisErrorLog
+}
+
+type RedisErrorLog struct {
+	RedisErrorChannel chan error
+	Logger            *log.Logger
 }
 
 type RedisImpl interface {
-	SetDataToRedis(key, value string) error
-	GetDataFromRedis(string) (string, error)
+	SetDataToRedis(string, interface{}) error
+	GetDataFromRedis(string) ([]byte, error)
 	DeleteDataFromRedis(string) error
 	SetRedisConn()
+}
+
+func (r *RedisObject) RedisErrorChannelInit() {
+	go func() {
+		for {
+			select {
+			case redisErr := <-r.ErrorLog.RedisErrorChannel:
+				log.Println("Error : ", redisErr)
+				r.ErrorLog.Logger.Println(redisErr)
+			}
+		}
+	}()
 }
 
 func NewRedisClient(option *redis.Options, ctx context.Context) RedisImpl {
@@ -51,42 +71,36 @@ func (r *RedisObject) SetRedisConn() {
 	r.Conn = r.RedisClient.Conn()
 }
 
-func (r RedisObject) SetDataToRedis(key, value string) error {
+func (r RedisObject) SetDataToRedis(key string, value interface{}) error {
 	if r.Conn == nil {
 		r.SetRedisConn()
 	}
 
-	err := r.Conn.Set(r.Ctx, key, value, time.Hour).Err()
-	if err != nil {
+	byteData, err := json.Marshal(value)
 
+	if err != nil {
+		return err
+	}
+
+	err = r.Conn.Set(r.Ctx, key, string(byteData), time.Hour).Err()
+	if err != nil {
 		return errors.New("redis Set Error")
 	}
 
 	return nil
 }
 
-func (r *RedisObject) GetDataFromRedis(key string) (string, error) {
+func (r *RedisObject) GetDataFromRedis(key string) ([]byte, error) {
 	if r.Conn == nil {
 		r.SetRedisConn()
 	}
 
-	val, err := r.Conn.Get(r.Ctx, key).Result()
+	val, err := r.Conn.Get(r.Ctx, key).Bytes()
+
+	err = r.redisErrorHandler(func() ([]byte, error) { return r.GetDataFromRedis(key) }, err)
 
 	if err != nil {
-		if err == redis.TxFailedErr {
-			// Tx가 실패한 경우 입니다.
-			return "", err
-		}
-
-		if err == redis.Nil {
-			// Key 값이 존재 하지 않을 떄
-		}
-
-		if err.Error() == "redis: client is closed" {
-			//Client가 닫혀 있을 떄
-		}
-
-		return "", err
+		return nil, err
 	}
 
 	return val, nil
@@ -104,4 +118,22 @@ func (r *RedisObject) DeleteDataFromRedis(key string) error {
 	}
 
 	return nil
+}
+
+func (r *RedisObject) redisErrorHandler(f func() ([]byte, error), err error) error {
+	if err.Error() == "redis: client is closed" {
+		r.SetRedisConn()
+		f()
+		return nil
+	}
+
+	if err == redis.TxFailedErr {
+		r.ErrorLog.RedisErrorChannel <- err
+	}
+
+	if err == redis.Nil {
+		r.ErrorLog.RedisErrorChannel <- err
+	}
+
+	return err
 }
