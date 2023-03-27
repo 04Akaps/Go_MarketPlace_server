@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	gRPC "goServer/eventListener"
-	gRPCUtils "goServer/eventListener/gRpcUtils"
 	initData "goServer/init"
+	gRPC "goServer/myGRpc"
+	gRPCUtils "goServer/myGRpc/gRpcUtils"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"log"

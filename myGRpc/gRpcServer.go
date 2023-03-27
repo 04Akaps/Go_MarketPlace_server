@@ -1,8 +1,8 @@
-package eventListener
+package myGRpc
 
 import (
-	"goServer/eventListener/gRpcUtils"
-	"goServer/eventListener/proto"
+	"goServer/myGRpc/gRpcUtils"
+	"goServer/myGRpc/proto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/reflection"
