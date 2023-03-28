@@ -2,6 +2,7 @@ package gRpcUtils
 
 import (
 	"context"
+	"fmt"
 	"golang.org/x/oauth2"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -38,5 +39,7 @@ func valid(authorization []string) bool {
 		return false
 	}
 	token := strings.TrimPrefix(authorization[0], "Bearer ")
+
+	fmt.Println("token", token)
 	return token == "my-access-token"
 }

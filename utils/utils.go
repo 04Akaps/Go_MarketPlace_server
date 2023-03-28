@@ -33,22 +33,21 @@ func LoggingMiddleware(next http.Handler, paseto p.PasetoInterface) http.Handler
 			r.Header.Set("Content-Type", "application/json")
 		}
 		w.Header().Set("Content-Type", "application/json")
-
-		if !strings.Contains(r.URL.String(), "auth") {
-			authCookie, err := r.Cookie("auth")
-
-			if err == http.ErrNoCookie {
-				customError.NewHandlerError(w, "Auth Token이 없습니다. ", 200)
-				return
-			}
-
-			err = paseto.VerifyToken(authCookie.Value)
-
-			if err != nil {
-				customError.NewHandlerError(w, "Auth 인증 실패...!!", 200)
-				return
-			}
-		}
+		//if !strings.Contains(r.URL.String(), "auth") || !strings.Contains(r.URL.String(), "rpc") {
+		//	authCookie, err := r.Cookie("auth")
+		//
+		//	if err == http.ErrNoCookie {
+		//		customError.NewHandlerError(w, "Auth Token이 없습니다. ", 200)
+		//		return
+		//	}
+		//
+		//	err = paseto.VerifyToken(authCookie.Value)
+		//
+		//	if err != nil {
+		//		customError.NewHandlerError(w, "Auth 인증 실패...!!", 200)
+		//		return
+		//	}
+		//}
 		log.Printf("%s %s", r.Method, r.URL.Path)
 		next.ServeHTTP(w, r)
 	})

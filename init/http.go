@@ -12,6 +12,8 @@ import (
 	r "goServer/redis"
 	"goServer/server"
 	"goServer/utils"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"log"
 	"net/http"
 	"time"
@@ -45,6 +47,7 @@ func registerHttpRouter(dbClient *sqlc.Queries, envData EnvData) http.Handler {
 	registerTestRouter(router)
 	registerLaunchpadRouter(router, httpServerErrLog.HttpServerErrLog, dbClient, envData)
 	registerAuthRouter(router, httpServerErrLog.HttpServerErrLog, newPasto)
+	registerRpcCallRouter(router)
 
 	return corsRouter
 }
@@ -83,4 +86,38 @@ func registerAuthRouter(router *mux.Router, channel chan error, paseto paseto.Pa
 
 	authRouter.HandleFunc("/{action}/{provider}", authController.Auth)
 	authRouter.HandleFunc("/logout", authController.Logout)
+}
+
+const (
+	gRpcScheme      = "market"
+	gRpcServiceName = "lb.market.grpc.io"
+)
+
+func registerRpcCallRouter(router *mux.Router) {
+
+	//cred, err := credentials.NewClientTLSFromFile("cert.pem", "")
+
+	//if err != nil {
+	//	log.Fatal("TlsFromFile Error ", err)
+	//}
+
+	opts := []grpc.DialOption{
+		//grpc.WithDefaultServiceConfig(`{"loadBalancingConfig": [{"round_robin":{}}]}`),
+		grpc.WithTransportCredentials(insecure.NewCredentials()), // 인증서 없이 테스트 하기 위함
+		//grpc.WithPerRPCCredentials(gRpcUtils.GetTokenSource()),   // 매 요청마다 인증서 확인
+		//grpc.WithKeepaliveParams(gRpcUtils.GetKeepAliveClientParameters(10*time.Second, time.Second)),
+	}
+
+	roundBin, err := grpc.Dial(
+		"localhost:50051",
+		opts...,
+	)
+
+	if err != nil {
+		log.Fatal(err) // 굳이 서버를 안끌 필요가 없으니 그냥 바로 Fatal
+	}
+
+	rpcCallTestRouter := router.PathPrefix("/rpc").Subrouter()
+	rpcCallController := server.NewRpcCallTest(roundBin)
+	rpcCallTestRouter.HandleFunc("/{ca}", rpcCallController.SendRpcCall)
 }
