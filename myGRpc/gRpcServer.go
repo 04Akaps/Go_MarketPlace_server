@@ -32,11 +32,6 @@ func (*server) CreateNewContract(ctx context.Context, req *proto.CreateNewContra
 	fmt.Println("newContract", newContract)
 	fmt.Println("newContract.Contract", newContract.Contract)
 	// ---> 받아오는 요청에 따라서 이벤트 리스닝을 돌려야 한다...
-	////data := contractStruct{
-	////	contract: newContract.Contract,
-	////}
-	//
-	////
 
 	return nil, nil
 }
