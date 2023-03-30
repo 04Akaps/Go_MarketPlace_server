@@ -8,8 +8,12 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/gorilla/mux"
 	"goServer/customError"
+	"goServer/myGRpc/proto"
 	sqlc "goServer/mysql/sqlc"
 	"goServer/utils"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -29,6 +33,7 @@ type LaunchpadController struct {
 	DBClient     *sqlc.Queries
 	ctx          context.Context
 	cryptoClient *ethclient.Client
+	gRPC         *grpc.ClientConn
 }
 
 type LaunchpadInterface interface {
@@ -39,11 +44,32 @@ type LaunchpadInterface interface {
 
 func NewLaunchpadController(channel chan error, dbClient *sqlc.Queries, cryptoClient *ethclient.Client) LaunchpadInterface {
 	context := context.Background()
+
+	//cred, err := credentials.NewClientTLSFromFile("cert.pem", "example.com")
+	//
+	//if err != nil {
+	//	log.Fatal("TlsFromFile Error ", err)
+	//}
+
+	opts := []grpc.DialOption{
+		//insecure.NewCredentials()
+		//grpc.WithDefaultServiceConfig(`{"loadBalancingConfig": [{"round_robin":{}}]}`),
+		grpc.WithTransportCredentials(insecure.NewCredentials()), // 인증서 없이 테스트 하기 위함
+		//grpc.WithPerRPCCredentials(gRpcUtils.GetTokenSource()), // 매 요청마다 인증서 확인
+		//grpc.WithKeepaliveParams(gRpcUtils.GetKeepAliveClientParameters(10*time.Second, time.Second)),
+	}
+
+	roundBin, _ := grpc.Dial(
+		"localhost:50051",
+		opts...,
+	)
+
 	return &LaunchpadController{
 		ErrorChannel: channel,
 		DBClient:     dbClient,
 		ctx:          context,
 		cryptoClient: cryptoClient,
+		gRPC:         roundBin,
 	}
 }
 
@@ -109,8 +135,20 @@ func (controller *LaunchpadController) MakeLaunchpad(w http.ResponseWriter, r *h
 		return
 	}
 
-	customError.NewHandlerError(w, "Success", 200)
+	client := proto.NewNewContractServiceClient(controller.gRPC)
+	newContract := &proto.NewContract{
+		Contract: req.CaAddress,
+	}
 
+	_, err = client.CreateNewContract(context.Background(), &proto.CreateNewContractRequest{
+		NewContract: newContract,
+	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	customError.NewHandlerError(w, "Success", 200)
 }
 
 func (controller *LaunchpadController) GetLaunchpadByHashValue(w http.ResponseWriter, r *http.Request) {

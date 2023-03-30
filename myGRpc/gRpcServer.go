@@ -104,10 +104,11 @@ func startServer(addr string) {
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
+	//creds, _ := credentials.NewServerTLSFromFile("cert.pem", "key.pem")
 
 	opts := []grpc.ServerOption{
-		//grpc.MaxRecvMsgSize(3),
-		//grpc.Creds(credentials.NewTLS(nil)),
+		grpc.MaxRecvMsgSize(100),
+		//grpc.Creds(creds),
 		//grpc.UnaryInterceptor(gRpcUtils.EnsureValidToken),
 		//grpc.KeepaliveEnforcementPolicy(gRpcUtils.GetKeepAliveEnforcement(5 * time.Second)),
 		//grpc.KeepaliveParams(gRpcUtils.GetKeepAliveServerParameters(15*time.Second, 30*time.Second, 5*time.Second, 5*time.Second, 1*time.Second)),

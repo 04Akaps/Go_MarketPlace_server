@@ -2,9 +2,11 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"github.com/gorilla/mux"
 	"goServer/myGRpc/proto"
 	"google.golang.org/grpc"
+	"log"
 	"net/http"
 )
 
@@ -38,8 +40,14 @@ func (rpc *RpcCallTest) SendRpcCall(w http.ResponseWriter, r *http.Request) {
 		Contract: ca,
 	}
 
-	client.CreateNewContract(context.Background(), &proto.CreateNewContractRequest{
+	response, err := client.CreateNewContract(context.Background(), &proto.CreateNewContractRequest{
 		NewContract: newContract,
 	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(response)
 
 }

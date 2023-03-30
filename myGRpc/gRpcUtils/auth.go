@@ -27,7 +27,7 @@ func EnsureValidToken(ctx context.Context, req interface{}, info *grpc.UnaryServ
 	if !ok {
 		return nil, status.Errorf(codes.InvalidArgument, "metadata 가 없습니다.")
 	}
-
+	fmt.Println(md["authorization"])
 	if !valid(md["authorization"]) {
 		return nil, status.Errorf(codes.Unauthenticated, "잘못된 token")
 	}
